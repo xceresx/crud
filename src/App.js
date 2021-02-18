@@ -15,7 +15,7 @@ function App() {
     
     const newTask={
       id:shortid.generate(),
-      task
+      name:task
     }
 
     setTasks([...tasks,newTask])
@@ -33,7 +33,7 @@ function App() {
             <ul className="list-group">
             
               {
-                tasks.map((task)=> ( 
+                tasks.map((task) => ( 
                 <li className="list-group-item" key={task.id}>
                   <span className="lead">{task.name}</span>
                   <button className="btn btn-danger btn-sm float-right mx-2">Delete</button>
