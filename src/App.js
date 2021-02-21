@@ -1,15 +1,31 @@
 import React, {useState}  from 'react'
-import {isEmpty} from 'lodash'
+import {isEmpty, size} from 'lodash'
 import shortid from 'shortid'
 
 function App() {
-  const [task, setTask]= useState("")
+  const [task, setTask] = useState("")
   const [tasks, setTasks] = useState([])
+  const [editMode,seteditMode]= useState(false)
+  const [id, setid] = useState("")
+  const [error, setError] = useState(null)
+
+  const validForm = () => {
+    let isValid = true
+    setError(null)
+
+    if (isEmpty(task)) { 
+      setError("You should add a task")
+      isValid = false
+      
+    }
+    
+    return isValid
+  }
 
   const addTask = (e) => {
     e.preventDefault()
-    if (isEmpty(task)) { 
-      console.log("Task empty")
+    
+    if (!validForm()) {
       return
     }
     
@@ -21,7 +37,32 @@ function App() {
     setTasks([...tasks,newTask])
     setTask("")
 
-  } 
+  }
+  
+  const saveTask = (e) => {
+    e.preventDefault()
+    
+    if (!validForm()) {
+      return
+    }
+    
+    const editedTasks = tasks.map(item => item.id === id ? {id, name: task} : item)
+    setTasks(editedTasks)
+    seteditMode(false)
+    setTask("")
+    setid("")
+  }
+
+  const deleteTask= (id) => {
+    const filteredTasks = tasks.filter(task => task.id !== id)
+    setTasks(filteredTasks)
+  }
+
+  const editTask = (theTask) => {
+    setTask(theTask.name)
+    seteditMode(true)
+    setid(theTask.id)
+  }
 
   return (
     <div className="container mt-5">
@@ -30,23 +71,45 @@ function App() {
       <div className="row">
         <div className="col-8">
           <h4 className="text-center">Tasks List</h4>
-            <ul className="list-group">
             
-              {
-                tasks.map((task) => ( 
-                <li className="list-group-item" key={task.id}>
-                  <span className="lead">{task.name}</span>
-                  <button className="btn btn-danger btn-sm float-right mx-2">Delete</button>
-                  <button className="btn btn-warning btn-sm float-right">Edit</button>
-                </li>
-                ))
-              }
+            {
+              size(tasks) == 0 ? (
+                <li className="list-group-item">There are no scheduled tasks</li>
+              ) : (
+                <ul className="list-group">
+            
+                {
+                  tasks.map((task) => ( 
+                  <li className="list-group-item" key={task.id}>
+                    <span className="lead">{task.name}</span>
+                      <button 
+                      className="btn btn-danger btn-sm float-right mx-2"
+                      onClick={()=>deleteTask(task.id)}
+                      >
+                        Delete
+                      </button>
+                      <button 
+                      className="btn btn-warning btn-sm float-right"
+                      onClick={()=>editTask(task)}
+                      >
+                        Edit
+                      </button>
+                  </li>
+                  ))
+                }
 
-            </ul>
+              </ul>
+              )
+              
+            }
+            
         </div>
         <div className="col-4">
-        <h4 className="text-center">Form</h4>
-          <form onSubmit={addTask}>  
+        <h4 className="text-center">{editMode ? "Modify task" : "Add task"}</h4>
+          <form onSubmit={editMode ? saveTask : addTask}>  
+            {
+              error && <span className="text-danger">{error}</span>
+            }
             <input
               type="text"
               className="form-control mb-2"
@@ -55,9 +118,9 @@ function App() {
               value={task}
             />
             <button 
-              className="btn btn-dark btn-block"
+              className={editMode ? "btn btn-warning btn-block" : "btn btn-dark btn-block"}
               type="submit"
-            > Add            
+            > {editMode ? "Save" : "Add" }            
             </button>
           </form>
         </div>
